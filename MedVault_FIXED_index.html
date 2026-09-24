@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MedVault</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body{margin:0;font-family:Arial;background:#070a12;color:#fff}
+header{display:flex;justify-content:space-between;padding:20px 32px;border-bottom:1px solid #222}
+.logo{font-size:28px;font-weight:bold;color:#7c5cff}
+.hero{padding:56px 32px;max-width:680px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;padding:0 32px 40px}
+.card{background:#111827;padding:18px;border-radius:16px}
+button{padding:10px 16px;border-radius:10px;border:0;background:#7c5cff;color:#fff;font-weight:bold;cursor:pointer}
+.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center}
+.box{background:#111827;padding:24px;border-radius:16px;width:min(420px,92vw)}
+input{width:100%;padding:12px;margin:8px 0;background:#0b1020;border:1px solid #333;color:#fff;border-radius:8px}
+#dash{display:none;padding:32px}
+#msg{color:#bbb}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">MedVault</div>
+  <button id="signinBtn">Sign In</button>
+</header>
+
+<section class="hero">
+  <h1>Your Notes. Your Library.</h1>
+  <p>Premium MBBS & College PDF marketplace.</p>
+  <button id="createBtn">Create Account</button>
+</section>
+
+<section class="grid">
+  <div class="card"><h3>Anatomy</h3><p>NPR 999</p></div>
+  <div class="card"><h3>Physiology</h3><p>NPR 799</p></div>
+  <div class="card"><h3>Biochemistry</h3><p>NPR 699</p></div>
+</section>
+
+<section id="dash">
+  <h2>Student Dashboard</h2>
+  <p id="welcome"></p>
+  <div class="card"><h3>My Library</h3><p>Purchased PDFs will appear here.</p></div>
+  <button id="logoutBtn">Logout</button>
+</section>
+
+<div id="modal" class="modal">
+  <div class="box">
+    <h2>Login</h2>
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <button id="signupBtn" style="width:100%">Create Account</button>
+    <button id="loginBtn" style="width:100%;margin-top:8px;background:#222">Login</button>
+    <p id="msg"></p>
+  </div>
+</div>
+
+<script>
+const supabase = window.supabase.createClient(
+  "https://uefimyichqaonbsihaaw.supabase.co",
+  "sb_publishable_tu-K2ldk7iIMfAn63UhVnQ_07JHlUlL"
+);
+
+const modal = document.getElementById("modal");
+const hero = document.querySelector(".hero");
+const grid = document.querySelector(".grid");
+const dash = document.getElementById("dash");
+const welcome = document.getElementById("welcome");
+const msg = document.getElementById("msg");
+
+document.getElementById("signinBtn").onclick = () => modal.style.display = "flex";
+document.getElementById("createBtn").onclick = () => modal.style.display = "flex";
+window.onclick = (e)=>{{ if(e.target===modal) modal.style.display="none"; }};
+
+document.getElementById("signupBtn").onclick = async () => {{
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const {{ error }} = await supabase.auth.signUp({{ email, password }});
+  msg.textContent = error ? error.message : "Account created. Check your email if confirmation is enabled.";
+}};
+
+document.getElementById("loginBtn").onclick = async () => {{
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const {{ error }} = await supabase.auth.signInWithPassword({{ email, password }});
+  if(error){{ msg.textContent = error.message; return; }}
+  const {{ data }} = await supabase.auth.getUser();
+  welcome.textContent = "Welcome, " + data.user.email;
+  hero.style.display = "none";
+  grid.style.display = "none";
+  dash.style.display = "block";
+  modal.style.display = "none";
+}};
+
+document.getElementById("logoutBtn").onclick = async () => {{
+  await supabase.auth.signOut();
+  location.reload();
+}};
+</script>
+</body>
+</html>
